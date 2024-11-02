@@ -1,0 +1,51 @@
+version: '3'
+services:
+  recom_express:
+    image: recommender:v3
+    container_name: recommender
+    volumes:
+      - .:/app
+    networks:
+      - db_network
+    depends_on:
+      - database
+    environment: 
+      - DB_HOST=database
+      - DB_USERNAME=user
+      - DB_PASSWORD=123456
+
+  database:
+    image: "git.behgit.ir:5050/soha/mysql-db:5.7"
+    container_name: database
+    command: --character-set-server=utf8 --collation-server=utf8_persian_ci --innodb-buffer-pool-size=2000M
+    restart: always
+    volumes:
+      - ./db_data:/var/lib/mysql
+    networks:
+      - db_network
+    environment: 
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_PASSWORD=123456
+      - MYSQL_USER=user
+      - MYSQL_DATABASE=e_estekhdam_db
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+
+  phpmyadmin:
+    image: "git.behgit.ir:5050/soha/phpmyadmin:5.1.1"
+    container_name: phpmyadmin
+    ports: 
+      - 8081:80
+    depends_on: 
+      - database
+    restart: always
+    networks:
+      - db_network
+    environment: 
+      - PMA_HOST=database
+      - UPLOAD_LIMIT=3000M
+      - MAX_EXECUTION_TIME=100000000
+
+networks:
+  db_network:
+    name: db_network
+    driver: bridge
